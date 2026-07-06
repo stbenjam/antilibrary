@@ -1,0 +1,773 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Antilibrary</title>
+<style>
+  :root {
+    --paper: #F8F6EE;
+    --paper-raised: #FFFFFF;
+    --paper-sunken: #EFECE0;
+    --ink: #24312A;
+    --ink-2: #55645B;
+    --ink-3: #83907F;
+    --rule: #D9D4C4;
+    --green: #177B50;          /* series: finished / read */
+    --brass: #96701E;          /* series: acquired / unread */
+    --green-soft: rgba(23,123,80,.12);
+    --brass-soft: rgba(150,112,30,.11);
+    --shelf-wood: #C9B99A;
+    --accent-ink: #14523A;     /* headings / links, darker than chart green */
+    --shadow: 0 1px 2px rgba(36,49,42,.07), 0 8px 24px rgba(36,49,42,.06);
+    --serif: "Iowan Old Style", "Palatino", "Book Antiqua", Georgia, serif;
+    --sans: -apple-system, "SF Pro Text", "Segoe UI", system-ui, sans-serif;
+    --mono: "SF Mono", Menlo, ui-monospace, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --paper: #10201A;
+      --paper-raised: #16281F;
+      --paper-sunken: #0B1813;
+      --ink: #E4E7DC;
+      --ink-2: #A9B3A4;
+      --ink-3: #75816F;
+      --rule: #2A3A2E;
+      --green: #339A6D;
+      --brass: #B58C3B;
+      --green-soft: rgba(51,154,109,.16);
+      --brass-soft: rgba(181,140,59,.15);
+      --shelf-wood: #3E4A38;
+      --accent-ink: #6FBE95;
+      --shadow: 0 1px 2px rgba(0,0,0,.4), 0 8px 24px rgba(0,0,0,.3);
+    }
+  }
+  :root[data-theme="light"] {
+    --paper: #F8F6EE; --paper-raised: #FFFFFF; --paper-sunken: #EFECE0;
+    --ink: #24312A; --ink-2: #55645B; --ink-3: #83907F; --rule: #D9D4C4;
+    --green: #177B50; --brass: #96701E;
+    --green-soft: rgba(23,123,80,.12); --brass-soft: rgba(150,112,30,.11);
+    --shelf-wood: #C9B99A; --accent-ink: #14523A;
+    --shadow: 0 1px 2px rgba(36,49,42,.07), 0 8px 24px rgba(36,49,42,.06);
+  }
+  :root[data-theme="dark"] {
+    --paper: #10201A; --paper-raised: #16281F; --paper-sunken: #0B1813;
+    --ink: #E4E7DC; --ink-2: #A9B3A4; --ink-3: #75816F; --rule: #2A3A2E;
+    --green: #339A6D; --brass: #B58C3B;
+    --green-soft: rgba(51,154,109,.16); --brass-soft: rgba(181,140,59,.15);
+    --shelf-wood: #3E4A38; --accent-ink: #6FBE95;
+    --shadow: 0 1px 2px rgba(0,0,0,.4), 0 8px 24px rgba(0,0,0,.3);
+  }
+
+  * { box-sizing: border-box; margin: 0; }
+  html { scroll-behavior: smooth; }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } *, *::before, *::after { transition: none !important; animation: none !important; } }
+
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--serif);
+    font-size: 17px;
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+  }
+  main { max-width: 880px; margin: 0 auto; padding: 0 24px 96px; }
+
+  a { color: var(--accent-ink); }
+
+  /* ---------- header ---------- */
+  header { padding: 72px 0 8px; }
+  .eyebrow {
+    font-family: var(--sans); font-size: 11.5px; font-weight: 600;
+    letter-spacing: .14em; text-transform: uppercase; color: var(--ink-3);
+    display: flex; align-items: center; gap: 12px;
+  }
+  .eyebrow::after { content: ""; flex: 1; height: 1px; background: var(--rule); }
+  h1 {
+    font-size: clamp(44px, 7vw, 68px); font-weight: 500; letter-spacing: -.01em;
+    line-height: 1.05; margin: 18px 0 0; text-wrap: balance;
+  }
+  .thesis { max-width: 62ch; margin-top: 22px; font-size: 18.5px; color: var(--ink-2); }
+  .thesis em { color: var(--ink); }
+
+  /* ---------- hero band ---------- */
+  .band {
+    display: grid; grid-template-columns: auto 1fr; gap: 8px 48px; align-items: end;
+    margin: 44px 0 10px; padding: 26px 0 24px;
+    border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule);
+  }
+  .hero-num {
+    font-size: clamp(88px, 14vw, 148px); line-height: .82; font-weight: 500;
+    color: var(--accent-ink); font-variant-numeric: tabular-nums; letter-spacing: -.03em;
+  }
+  .hero-cap { font-size: 18px; color: var(--ink-2); margin-top: 10px; max-width: 30ch; }
+  .band-stats { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 20px; }
+  .bs .n { font-family: var(--mono); font-size: 21px; font-weight: 500; color: var(--ink); }
+  .bs .l { font-family: var(--sans); font-size: 11.5px; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-3); margin-top: 3px; }
+  .progress { grid-column: 1 / -1; margin-top: 6px; }
+  .progress .track { height: 6px; border-radius: 3px; background: var(--paper-sunken); overflow: hidden; }
+  .progress .fill { height: 100%; border-radius: 3px; background: var(--green); }
+  .progress .cap { font-family: var(--sans); font-size: 12.5px; color: var(--ink-3); margin-top: 7px; }
+  @media (max-width: 640px) {
+    .band { grid-template-columns: 1fr; }
+    .band-stats { grid-template-columns: repeat(3, minmax(0,1fr)); }
+  }
+
+  /* ---------- sections ---------- */
+  section { margin-top: 84px; }
+  .entry {
+    font-family: var(--sans); font-size: 11.5px; font-weight: 600;
+    letter-spacing: .14em; text-transform: uppercase; color: var(--brass);
+  }
+  :root[data-theme="dark"] .entry { color: var(--brass); }
+  h2 { font-size: 31px; font-weight: 500; margin-top: 8px; letter-spacing: -.005em; text-wrap: balance; }
+  .lede { max-width: 62ch; color: var(--ink-2); margin-top: 12px; }
+  .lede strong, .lede em { color: var(--ink); }
+  .note { font-family: var(--sans); font-size: 13px; color: var(--ink-3); max-width: 68ch; margin-top: 14px; line-height: 1.55; }
+
+  /* ---------- legend chips ---------- */
+  .legend { display: flex; flex-wrap: wrap; gap: 18px; margin: 22px 0 10px; font-family: var(--sans); font-size: 13px; color: var(--ink-2); }
+  .legend .chip { display: inline-flex; align-items: center; gap: 7px; }
+  .swatch { width: 12px; height: 12px; border-radius: 3px; display: inline-block; }
+  .swatch.read { background: var(--green); }
+  .swatch.unread { background: var(--brass-soft); border: 1.5px solid var(--brass); }
+
+  /* ---------- the shelf ---------- */
+  .bookcase { margin-top: 8px; }
+  .shelf { display: flex; align-items: flex-end; gap: 2px; padding: 0 10px; border-bottom: 5px solid var(--shelf-wood); border-radius: 0 0 2px 2px; }
+  .shelf + .shelf { margin-top: 26px; }
+  .spine { border-radius: 2px 2px 0 0; cursor: default; transition: transform .12s ease; position: relative; }
+  .spine.read { background: var(--green); }
+  .spine.unread { background: var(--brass-soft); border: 1.5px solid var(--brass); border-bottom: none; }
+  .spine:hover { transform: translateY(-5px); }
+
+  /* ---------- charts ---------- */
+  .fig { margin-top: 26px; background: var(--paper-raised); border: 1px solid var(--rule); border-radius: 10px; padding: 22px 22px 16px; box-shadow: var(--shadow); }
+  .fig .fig-title { font-family: var(--sans); font-size: 13.5px; font-weight: 600; color: var(--ink); }
+  .fig .fig-sub { font-family: var(--sans); font-size: 12.5px; color: var(--ink-3); margin-top: 2px; }
+  .fig svg { display: block; width: 100%; height: auto; margin-top: 14px; }
+  .fig .axis text, .chart-label { font-family: var(--sans); }
+  details.datatable { margin-top: 12px; font-family: var(--sans); font-size: 13px; color: var(--ink-2); }
+  details.datatable summary { cursor: pointer; color: var(--ink-3); }
+  details.datatable table { margin-top: 10px; }
+
+  /* ---------- tooltip ---------- */
+  #tip {
+    position: fixed; z-index: 50; pointer-events: none; display: none;
+    background: var(--ink); color: var(--paper); font-family: var(--sans);
+    font-size: 12.5px; line-height: 1.45; padding: 9px 12px; border-radius: 8px;
+    max-width: 280px; box-shadow: 0 6px 20px rgba(0,0,0,.25);
+  }
+  #tip .t { font-weight: 600; }
+  #tip .s { opacity: .75; }
+
+  /* ---------- tables ---------- */
+  table { border-collapse: collapse; width: 100%; margin-top: 22px; font-size: 15.5px; }
+  th {
+    font-family: var(--sans); font-size: 11px; font-weight: 600; letter-spacing: .1em;
+    text-transform: uppercase; color: var(--ink-3); text-align: left;
+    padding: 0 14px 9px 0; border-bottom: 1px solid var(--rule);
+  }
+  td { padding: 10px 14px 10px 0; border-bottom: 1px solid var(--rule); vertical-align: baseline; }
+  td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  td.num { font-family: var(--mono); font-size: 14px; }
+  td .sub { display: block; font-family: var(--sans); font-size: 12.5px; color: var(--ink-3); }
+  tr:last-child td { border-bottom: none; }
+
+  /* ---------- prognosis ---------- */
+  .prognosis { background: var(--paper-raised); border: 1px solid var(--rule); border-radius: 12px; box-shadow: var(--shadow); padding: 28px; margin-top: 26px; }
+  .verdict { font-size: clamp(24px, 4vw, 34px); line-height: 1.25; font-weight: 500; text-wrap: balance; }
+  .verdict .v { color: var(--accent-ink); border-bottom: 3px solid var(--brass); }
+  .verdict-sub { color: var(--ink-2); margin-top: 10px; font-size: 16px; max-width: 58ch; }
+  .scenarios { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 22px; }
+  .scenario {
+    font-family: var(--sans); font-size: 13px; font-weight: 500; color: var(--ink-2);
+    background: var(--paper); border: 1px solid var(--rule); border-radius: 999px;
+    padding: 7px 14px; cursor: pointer; transition: all .12s ease;
+  }
+  .scenario:hover { border-color: var(--brass); color: var(--ink); }
+  .scenario[aria-pressed="true"] { background: var(--green-soft); border-color: var(--green); color: var(--ink); }
+  .scenario:focus-visible, .spine:focus-visible, button:focus-visible, input:focus-visible, summary:focus-visible, a:focus-visible {
+    outline: 2px solid var(--accent-ink); outline-offset: 2px;
+  }
+  .sliders { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; margin-top: 24px; }
+  @media (max-width: 640px) { .sliders { grid-template-columns: 1fr; } }
+  .slider label { font-family: var(--sans); font-size: 13px; font-weight: 600; color: var(--ink-2); display: flex; justify-content: space-between; align-items: baseline; }
+  .slider label output { font-family: var(--mono); font-size: 15px; color: var(--ink); }
+  .slider input[type=range] { width: 100%; margin-top: 10px; accent-color: var(--accent-ink); }
+  #proj-chart { margin-top: 8px; }
+
+  /* ---------- callout ---------- */
+  .callout {
+    margin-top: 26px; padding: 26px 28px; border-radius: 12px;
+    background: linear-gradient(135deg, var(--green-soft), var(--brass-soft));
+    border: 1px solid var(--rule);
+  }
+  .callout .big { font-size: 24px; font-weight: 500; text-wrap: balance; }
+  .callout .row { display: flex; flex-wrap: wrap; gap: 12px 40px; margin-top: 16px; }
+  .callout .n { font-family: var(--mono); font-size: 20px; }
+  .callout .l { font-family: var(--sans); font-size: 11.5px; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-3); margin-top: 2px; }
+
+  /* ---------- footer ---------- */
+  footer { margin-top: 100px; padding-top: 26px; border-top: 1px solid var(--rule); font-family: var(--sans); font-size: 13px; color: var(--ink-3); line-height: 1.7; }
+  footer p + p { margin-top: 8px; }
+
+  /* ---------- theme toggle ---------- */
+  #theme-btn {
+    position: fixed; top: 18px; right: 18px; z-index: 60;
+    font-family: var(--sans); font-size: 12px; color: var(--ink-2);
+    background: var(--paper-raised); border: 1px solid var(--rule); border-radius: 999px;
+    padding: 6px 13px; cursor: pointer; box-shadow: var(--shadow);
+  }
+</style>
+</head>
+<body>
+<button id="theme-btn" aria-label="Toggle color theme">lamp</button>
+<div id="tip" role="tooltip"></div>
+
+<main>
+<header>
+  <div class="eyebrow">A private audit &middot; compiled 6 July 2026</div>
+  <h1>The Antilibrary</h1>
+  <p class="thesis">
+    Umberto Eco kept a library of thirty thousand books and was often asked whether he had
+    read them all. He explained that the unread ones were the point &mdash; a research tool,
+    a reminder of everything still unknown. Taleb named this the <em>antilibrary</em>, and argued
+    it should grow more valuable, and larger, as you age. What follows is a full accounting of yours,
+    Stephen: every spine in the Calibre library, every finish date you or Goodreads recorded,
+    and the quiet arithmetic of whether the mountain is winning.
+  </p>
+</header>
+
+<div class="band">
+  <div>
+    <div class="hero-num" id="hero-unread">118</div>
+    <div class="hero-cap">books you own and have not read</div>
+  </div>
+  <div class="band-stats">
+    <div class="bs"><div class="n" id="stat-pages">66,143</div><div class="l">pages owed</div></div>
+    <div class="bs"><div class="n" id="stat-words">19.0M</div><div class="l">words owed</div></div>
+    <div class="bs"><div class="n" id="stat-avg">561</div><div class="l">avg pages each</div></div>
+    <div class="progress">
+      <div class="track"><div class="fill" id="prog-fill" style="width:40.7%"></div></div>
+      <div class="cap" id="prog-cap"></div>
+    </div>
+  </div>
+</div>
+
+<section id="shelf-section">
+  <div class="entry">Entry I</div>
+  <h2>The Shelf, Every Spine of It</h2>
+  <p class="lede">
+    All <strong id="shelf-owned">199</strong> active books, shelved in the order they arrived,
+    sized by page count. Green spines are conquered. The outlined ones are the antilibrary.
+    Hover any spine for its title.
+  </p>
+  <div class="legend">
+    <span class="chip"><span class="swatch read"></span> read (<span id="leg-read">81</span>)</span>
+    <span class="chip"><span class="swatch unread"></span> unread (<span id="leg-unread">118</span>)</span>
+  </div>
+  <div class="bookcase" id="bookcase" aria-label="Bookshelf visualization of all owned books"></div>
+  <p class="note" id="shelf-note"></p>
+</section>
+
+<section id="flow-section">
+  <div class="entry">Entry II</div>
+  <h2>The Flow: Books In, Books Out</h2>
+  <p class="lede">
+    A library is a bathtub. Acquisitions pour in; finished books drain out.
+    Here is each year&rsquo;s inflow to the shelf against everything you finished, from any source.
+  </p>
+  <div class="fig">
+    <div class="fig-title">Acquired vs. finished, by year</div>
+    <div class="fig-sub">Inflow = books added to the Calibre shelf &middot; outflow = recorded finishes from all sources</div>
+    <div id="flow-chart"></div>
+    <details class="datatable"><summary>View as table</summary><div id="flow-table"></div></details>
+  </div>
+  <p class="note">
+    The 2024 spike is partly the great import &mdash; the library arrived in Calibre in bulk that
+    November, so &ldquo;acquired&rdquo; includes books you already owned. 2026 finishes are as recorded:
+    the last logged finish is 18 April, and the Goodreads export is from November 2025, so this year
+    is almost certainly undercounted. The trend, however, is not a logging artifact.
+  </p>
+</section>
+
+<section id="mountain-section">
+  <div class="entry">Entry III</div>
+  <h2>Mount Tsundoku, Elevation Profile</h2>
+  <p class="lede">
+    <em>Tsundoku</em>: the Japanese word for acquiring books and letting them pile up, unread.
+    This is the size of your unread pile, month by month, since the library arrived.
+    It has never once gone down for more than a month at a time.
+  </p>
+  <div class="fig">
+    <div class="fig-title">Unread books on the shelf</div>
+    <div class="fig-sub">November 2024 &ndash; July 2026 &middot; hover for monthly detail</div>
+    <div id="curve-chart"></div>
+  </div>
+</section>
+
+<section id="prognosis-section">
+  <div class="entry">Entry IV</div>
+  <h2>The Prognosis</h2>
+  <p class="lede">
+    The only question that matters: <em>will you ever finish?</em> Over the last twelve months you
+    added <strong>68</strong> books to the shelf and finished <strong>30</strong> from it.
+    Set the dials to any future you like and the ledger will tell you when &mdash; or whether &mdash;
+    the pile clears.
+  </p>
+  <div class="prognosis">
+    <div class="verdict" id="verdict"></div>
+    <div class="verdict-sub" id="verdict-sub"></div>
+    <div class="scenarios" id="scenarios" role="group" aria-label="Projection scenarios"></div>
+    <div class="sliders">
+      <div class="slider">
+        <label>Books finished from the shelf, per year <output id="out-read">30</output></label>
+        <input type="range" id="rate-read" min="0" max="120" value="30" step="1">
+      </div>
+      <div class="slider">
+        <label>Books acquired, per year <output id="out-buy">68</output></label>
+        <input type="range" id="rate-buy" min="0" max="120" value="68" step="1">
+      </div>
+    </div>
+    <div id="proj-chart"></div>
+  </div>
+  <p class="note">
+    For scale: the 19.0 million unread words are 32 copies of <em>War and Peace</em>. At 250 words
+    a minute that is 1,266 hours of reading &mdash; 53 days without sleeping, or about three and a
+    half years at a faithful hour every night.
+  </p>
+</section>
+
+<section id="jordan-section">
+  <div class="entry">Entry V</div>
+  <h2>The Jordan Problem</h2>
+  <p class="lede">
+    No accounting of this debt is honest without naming its largest creditor. At some point you
+    acquired the <em>entire</em> Wheel of Time &mdash; and its five biggest volumes are, by page
+    count, your five biggest unread books.
+  </p>
+  <div class="callout">
+    <div class="big">Robert Jordan alone is owed 16 books &mdash; 26% of every unread page you have.</div>
+    <div class="row">
+      <div><div class="n">16,994</div><div class="l">pages of Wheel of Time</div></div>
+      <div><div class="n">5.08M</div><div class="l">words</div></div>
+      <div><div class="n">1,408</div><div class="l">pages, A Memory of Light</div></div>
+    </div>
+  </div>
+  <table>
+    <thead><tr><th>Author</th><th class="num">Books owed</th><th class="num">Pages owed</th></tr></thead>
+    <tbody id="author-table"></tbody>
+  </table>
+  <p class="note">Brandon Sanderson finished the Wheel of Time. Statistically, you may not.</p>
+</section>
+
+<section id="elders-section">
+  <div class="entry">Entry VI</div>
+  <h2>The Elders of the Shelf</h2>
+  <p class="lede">
+    Every unread book is a promise; these are the promises you have kept waiting the longest.
+    The mushrooms have been particularly patient.
+  </p>
+  <table>
+    <thead><tr><th>Book</th><th class="num">Waiting</th><th class="num">Pages</th></tr></thead>
+    <tbody id="elder-table"></tbody>
+  </table>
+  <p class="note" id="undated-note"></p>
+</section>
+
+<section id="series-section">
+  <div class="entry">Entry VII</div>
+  <h2>Open Threads</h2>
+  <p class="lede">
+    Series you began, enjoyed enough to buy more of, and then left mid-story.
+    Somewhere, Murderbot is still waiting on you &mdash; and it hates waiting for humans.
+  </p>
+  <table>
+    <thead><tr><th>Series</th><th class="num">Read</th><th class="num">Left</th><th>Next up</th></tr></thead>
+    <tbody id="series-table"></tbody>
+  </table>
+</section>
+
+<section id="priority-section">
+  <div class="entry">Entry VIII</div>
+  <h2>Flagged and Forgotten</h2>
+  <p class="lede">
+    These are not my recommendations &mdash; they are <em>yours</em>. At some point you gave these
+    books a priority rating in Calibre, which is the librarian&rsquo;s way of writing yourself a
+    note in all caps. Two were flagged within weeks of arriving &mdash; optimism in its purest
+    recorded form. All remain unread.
+  </p>
+  <table>
+    <thead><tr><th>Book</th><th class="num">Your own priority</th></tr></thead>
+    <tbody id="priority-table"></tbody>
+  </table>
+</section>
+
+<section id="composition-section">
+  <div class="entry">Entry IX</div>
+  <h2>The Composition of the Debt</h2>
+  <p class="lede">
+    What the mountain is made of. It is, overwhelmingly, other worlds &mdash;
+    which seems right for a man who spends his days making this one&rsquo;s software release on time.
+  </p>
+  <div class="fig">
+    <div class="fig-title">Unread books by genre tag</div>
+    <div class="fig-sub">A book may carry several tags</div>
+    <div id="tag-chart"></div>
+  </div>
+</section>
+
+<footer>
+  <p><strong>Methodology.</strong> Sources: the Calibre library database (199 active books; 249 archived
+  books excluded from the accounting) and your Goodreads export of November 2025 (331 rows).
+  &ldquo;Read&rdquo; is your own Calibre read flag, backfilled from the
+  Goodreads read shelf. Page and word counts are Calibre&rsquo;s. Finish dates are as recorded;
+  no credit was extended for books merely begun.</p>
+  <p>Compiled for Stephen by Claude, who notes for the record that Eco would consider all of this
+  a feature. The antilibrary is not a backlog. It is a horizon.</p>
+</footer>
+</main>
+
+<script>
+const DATA = {"generated": "2026-07-06", "totals": {"owned": 199, "read": 81, "unread": 118, "archived": 249, "pages_owed": 66143, "words_owed": 18985118, "staged_unread": 24, "in12": 68, "out12": 30, "out2025_shelf": 51, "pace_all_3yr": 53.0}, "spines": [{"t": "Packing for Mars: The Curious Science of Life in the Void", "a": "Mary Roach", "p": 280, "r": true, "s": null, "si": null, "ad": null, "dr": "2025-05-10", "st": false, "pr": null}, {"t": "Razorblade Tears", "a": "S. A. Cosby", "p": 351, "r": true, "s": null, "si": null, "ad": null, "dr": "2025-06-23", "st": false, "pr": null}, {"t": "The Invisible Life of Addie LaRue", "a": "V. E. Schwab, Victoria Schwab", "p": 591, "r": true, "s": null, "si": null, "ad": null, "dr": "2025-12-08", "st": false, "pr": null}, {"t": "The Little Mushroom: Revelations", "a": "Yi Shisizhou", "p": 427, "r": true, "s": "Little Mushroom", "si": 2.0, "ad": null, "dr": null, "st": false, "pr": null}, {"t": "Mycelium Running: How Mushrooms Can Help Save the World", "a": "Paul Stamets", "p": 540, "r": false, "s": null, "si": null, "ad": "2022-05-16", "dr": null, "st": true, "pr": null}, {"t": "Hyperion", "a": "Dan Simmons", "p": 589, "r": true, "s": "Hyperion Cantos", "si": 1.0, "ad": "2022-06-03", "dr": "2025-08-21", "st": true, "pr": null}, {"t": "The Man From the Future: The Visionary Ideas of John Von Neumann", "a": "Ananyo Bhattacharya", "p": 438, "r": false, "s": null, "si": null, "ad": "2022-08-09", "dr": null, "st": true, "pr": null}, {"t": "The Rape of Nanking", "a": "Iris Chang", "p": 354, "r": false, "s": null, "si": null, "ad": "2022-11-30", "dr": null, "st": true, "pr": null}, {"t": "Dharma Bums", "a": "Jack Kerouac", "p": 243, "r": false, "s": null, "si": null, "ad": "2022-11-30", "dr": null, "st": true, "pr": null}, {"t": "A Pocket Guide to Pigeon Watching: Getting to Know the World's Most Misunderstood Bird", "a": "Rosemary Mosco", "p": 135, "r": true, "s": null, "si": null, "ad": "2023-01-27", "dr": "2025-11-02", "st": true, "pr": null}, {"t": "Demons in the Golden Empire: Gonzalo Pizarro During the Spanish Conquest of the Inca Empire", "a": "Marcos Antonio Hernandez", "p": 372, "r": false, "s": null, "si": null, "ad": "2023-07-17", "dr": null, "st": true, "pr": null}, {"t": "Endurance: Shackleton's Incredible Voyage", "a": "Alfred Lansing", "p": 324, "r": false, "s": null, "si": null, "ad": "2023-07-27", "dr": null, "st": true, "pr": null}, {"t": "Blackouts", "a": "Justin Torres", "p": 179, "r": true, "s": null, "si": null, "ad": "2024-04-10", "dr": null, "st": true, "pr": null}, {"t": "The Mysterious Case of Rudolf Diesel: Genius, Power, and Deception on the Eve of World War I", "a": "Douglas Brunt", "p": 310, "r": false, "s": null, "si": null, "ad": "2024-10-14", "dr": null, "st": true, "pr": null}, {"t": "Looking for Alaska", "a": "John Green", "p": 265, "r": false, "s": null, "si": null, "ad": "2024-10-17", "dr": null, "st": true, "pr": null}, {"t": "An Echo of Things to Come", "a": "James Islington", "p": 909, "r": true, "s": "The Licanius Trilogy", "si": 2.0, "ad": "2024-10-21", "dr": "2024-12-29", "st": true, "pr": null}, {"t": "The Fifth Season", "a": "N. K. Jemisin", "p": 452, "r": true, "s": "The Broken Earth", "si": 1.0, "ad": "2024-10-25", "dr": "2025-11-22", "st": true, "pr": null}, {"t": "Blood Over Bright Haven", "a": "M. L. Wang", "p": 473, "r": true, "s": null, "si": null, "ad": "2024-10-29", "dr": "2025-05-03", "st": true, "pr": null}, {"t": "The Obelisk Gate", "a": "N. K. Jemisin", "p": 392, "r": true, "s": "The Broken Earth", "si": 2.0, "ad": "2024-10-30", "dr": "2025-11-27", "st": true, "pr": null}, {"t": "The Stone Sky", "a": "N. K. Jemisin", "p": 379, "r": true, "s": "The Broken Earth", "si": 3.0, "ad": "2024-10-30", "dr": "2025-12-01", "st": true, "pr": null}, {"t": "Oathbringer", "a": "Brandon Sanderson", "p": 1782, "r": true, "s": "The Stormlight Archive", "si": 3.0, "ad": "2024-11-01", "dr": "2025-03-09", "st": true, "pr": null}, {"t": "The Priory of the Orange Tree", "a": "Samantha Shannon", "p": 1037, "r": false, "s": "The Roots of Chaos", "si": 1.0, "ad": "2024-11-01", "dr": null, "st": true, "pr": null}, {"t": "Dawnshard", "a": "Brandon Sanderson", "p": 206, "r": true, "s": "The Stormlight Archive", "si": 3.5, "ad": "2024-11-01", "dr": "2025-03-13", "st": true, "pr": null}, {"t": "Morning Star", "a": "Pierce Brown", "p": 691, "r": true, "s": "Red Rising Saga", "si": 3.0, "ad": "2024-11-05", "dr": "2024-11-17", "st": true, "pr": null}, {"t": "Iron Gold", "a": "Pierce Brown", "p": 695, "r": true, "s": "Red Rising Saga", "si": 4.0, "ad": "2024-11-05", "dr": "2024-11-25", "st": true, "pr": null}, {"t": "Seveneves", "a": "Neal Stephenson", "p": 975, "r": false, "s": null, "si": null, "ad": "2024-11-06", "dr": null, "st": true, "pr": null}, {"t": "Babel: An Arcane History", "a": "R. F. Kuang", "p": 710, "r": true, "s": null, "si": null, "ad": "2024-11-12", "dr": "2025-01-31", "st": true, "pr": null}, {"t": "Artificial Condition", "a": "Martha Wells", "p": 112, "r": true, "s": "The Murderbot Diaries", "si": 2.0, "ad": "2024-11-12", "dr": "2024-11-17", "st": true, "pr": null}, {"t": "System Collapse", "a": "Martha Wells", "p": 213, "r": false, "s": "The Murderbot Diaries", "si": 7.0, "ad": "2024-11-12", "dr": null, "st": true, "pr": null}, {"t": "Rhythm of War", "a": "Brandon Sanderson", "p": 1700, "r": true, "s": "The Stormlight Archive", "si": 4.0, "ad": "2024-11-12", "dr": "2025-04-08", "st": true, "pr": null}, {"t": "The Way of Kings", "a": "Brandon Sanderson", "p": 1465, "r": true, "s": "The Stormlight Archive", "si": 1.0, "ad": "2024-11-14", "dr": "2025-02-16", "st": true, "pr": null}, {"t": "Jonathan Strange & Mr Norrell", "a": "Susanna Clarke", "p": 1073, "r": false, "s": "Strange & Norrell", "si": 1.0, "ad": "2024-11-14", "dr": null, "st": true, "pr": 6}, {"t": "Empire of Silence", "a": "Christopher Ruocchio", "p": 808, "r": true, "s": "The Sun Eater", "si": 1.0, "ad": "2024-11-14", "dr": "2025-06-11", "st": true, "pr": null}, {"t": "Platform Engineering: A Guide for Technical, Product, and People Leaders", "a": "Camille Fournier, Ian Nowland", "p": 388, "r": false, "s": null, "si": null, "ad": "2024-11-15", "dr": null, "st": false, "pr": null}, {"t": "Malice", "a": "John Gwynne", "p": 799, "r": false, "s": "The Faithful and the Fallen", "si": 1.0, "ad": "2024-11-16", "dr": null, "st": true, "pr": null}, {"t": "Rogue Protocol", "a": "Martha Wells", "p": 118, "r": true, "s": "The Murderbot Diaries", "si": 3.0, "ad": "2024-11-16", "dr": "2024-11-18", "st": true, "pr": null}, {"t": "Home: Habitat, Range, Niche, Territory", "a": "Martha Wells", "p": 14, "r": false, "s": "The Murderbot Diaries", "si": 4.5, "ad": "2024-11-16", "dr": null, "st": true, "pr": null}, {"t": "Where the Red Fern Grows", "a": "Wilson Rawls", "p": 265, "r": true, "s": null, "si": null, "ad": "2024-11-17", "dr": null, "st": true, "pr": null}, {"t": "Love Undetectable: Notes on Friendship, Sex, and Survival", "a": "Andrew Sullivan", "p": 213, "r": true, "s": null, "si": null, "ad": "2024-11-17", "dr": null, "st": true, "pr": null}, {"t": "The Ballad of Songbirds and Snakes", "a": "Suzanne Collins", "p": 506, "r": true, "s": "The Hunger Games", "si": 0.0, "ad": "2024-11-17", "dr": "2020-07-01", "st": true, "pr": null}, {"t": "Dark Age", "a": "Pierce Brown", "p": 981, "r": true, "s": "Red Rising Saga", "si": 5.0, "ad": "2024-11-17", "dr": "2024-11-30", "st": true, "pr": null}, {"t": "The Black Prism", "a": "Brent Weeks", "p": 717, "r": false, "s": "Lightbringer", "si": 1.0, "ad": "2024-11-17", "dr": null, "st": true, "pr": null}, {"t": "Slow Productivity: The Lost Art of Accomplishment Without Burnout", "a": "Cal Newport", "p": 233, "r": true, "s": null, "si": null, "ad": "2024-11-18", "dr": null, "st": true, "pr": null}, {"t": "The Book That Broke the World", "a": "Mark Lawrence", "p": 440, "r": false, "s": "The Library Trilogy", "si": 2.0, "ad": "2024-11-19", "dr": null, "st": true, "pr": null}, {"t": "Exit Strategy", "a": "Martha Wells", "p": 124, "r": true, "s": "The Murderbot Diaries", "si": 4.0, "ad": "2024-11-19", "dr": "2024-11-26", "st": true, "pr": null}, {"t": "Network Effect", "a": "Martha Wells", "p": 388, "r": false, "s": "The Murderbot Diaries", "si": 5.0, "ad": "2024-11-19", "dr": null, "st": true, "pr": null}, {"t": "The Serviceberry: Abundance and Reciprocity in the Natural World", "a": "Robin Wall Kimmerer", "p": 54, "r": false, "s": null, "si": null, "ad": "2024-11-19", "dr": null, "st": true, "pr": null}, {"t": "A Day of Fallen Night", "a": "Samantha Shannon", "p": 1134, "r": false, "s": "The Roots of Chaos", "si": 0.0, "ad": "2024-11-19", "dr": null, "st": true, "pr": null}, {"t": "The Well of Ascension", "a": "Brandon Sanderson", "p": 953, "r": true, "s": "The Mistborn Saga", "si": 2.0, "ad": "2024-11-20", "dr": "2026-03-15", "st": true, "pr": null}, {"t": "The Alloy of Law", "a": "Brandon Sanderson", "p": 367, "r": true, "s": "Mistborn: Wax & Wayne", "si": 1.0, "ad": "2024-11-20", "dr": "2025-10-16", "st": true, "pr": null}, {"t": "Shadows of Self", "a": "Brandon Sanderson", "p": 436, "r": true, "s": "Mistborn: Wax & Wayne", "si": 2.0, "ad": "2024-11-20", "dr": "2025-10-20", "st": true, "pr": null}, {"t": "Mistborn", "a": "Brandon Sanderson", "p": 808, "r": true, "s": "The Mistborn Saga", "si": 1.0, "ad": "2024-11-20", "dr": "2025-01-08", "st": false, "pr": null}, {"t": "Mistborn: Secret History", "a": "Brandon Sanderson", "p": 176, "r": true, "s": "The Mistborn Saga", "si": 3.5, "ad": "2024-11-20", "dr": "2025-01-08", "st": true, "pr": null}, {"t": "The Name of the Wind", "a": "Patrick Rothfuss", "p": 899, "r": true, "s": "The Kingkiller Chronicle", "si": 1.0, "ad": "2024-11-20", "dr": "2025-12-31", "st": true, "pr": null}, {"t": "The Wise Man's Fear", "a": "Patrick Rothfuss", "p": 1422, "r": true, "s": "The Kingkiller Chronicle", "si": 2.0, "ad": "2024-11-20", "dr": "2026-01-16", "st": true, "pr": null}, {"t": "The Shadow of What Was Lost", "a": "James Islington", "p": 851, "r": true, "s": "The Licanius Trilogy", "si": 1.0, "ad": "2024-11-23", "dr": "2024-12-23", "st": true, "pr": null}, {"t": "The Secret History", "a": "Donna Tartt", "p": 710, "r": true, "s": null, "si": null, "ad": "2024-11-25", "dr": "2025-01-24", "st": true, "pr": null}, {"t": "Giovanni's Room", "a": "James Baldwin", "p": 177, "r": true, "s": null, "si": null, "ad": "2024-11-25", "dr": "2024-12-14", "st": true, "pr": null}, {"t": "Compulsory", "a": "Martha Wells", "p": 5, "r": true, "s": "The Murderbot Diaries", "si": 0.5, "ad": "2024-11-27", "dr": "2024-01-01", "st": true, "pr": null}, {"t": "Fugitive Telemetry", "a": "Martha Wells", "p": 132, "r": false, "s": "The Murderbot Diaries", "si": 6.0, "ad": "2024-11-27", "dr": null, "st": true, "pr": null}, {"t": "Lonesome Dove", "a": "Larry McMurtry", "p": 1195, "r": false, "s": "Lonesome Dove", "si": 1.0, "ad": "2024-11-28", "dr": null, "st": true, "pr": null}, {"t": "The Book That Wouldn’t Burn", "a": "Mark Lawrence", "p": 665, "r": false, "s": "The Library Trilogy", "si": 1.0, "ad": "2024-11-28", "dr": null, "st": true, "pr": null}, {"t": "Light Bringer", "a": "Pierce Brown", "p": 864, "r": true, "s": "Red Rising Saga", "si": 6.0, "ad": "2024-12-02", "dr": "2024-12-09", "st": true, "pr": null}, {"t": "The House in the Cerulean Sea", "a": "T. J. Klune", "p": 453, "r": true, "s": "Cerulean Chronicles", "si": 1.0, "ad": "2024-12-02", "dr": "2025-01-05", "st": false, "pr": null}, {"t": "A Deadly Education", "a": "Naomi Novik", "p": 300, "r": false, "s": "The Scholomance", "si": 1.0, "ad": "2024-12-04", "dr": null, "st": false, "pr": null}, {"t": "The Toll", "a": "Neal Shusterman", "p": 535, "r": false, "s": "Arc of a Scythe", "si": 3.0, "ad": "2024-12-04", "dr": null, "st": false, "pr": null}, {"t": "Tress of the Emerald Sea", "a": "Brandon Sanderson", "p": 403, "r": true, "s": "The Cosmere", "si": 28.0, "ad": "2024-12-09", "dr": "2024-12-17", "st": false, "pr": null}, {"t": "The River of Silver: Tales From the Daevabad Trilogy", "a": "S. A. Chakraborty", "p": 304, "r": false, "s": null, "si": null, "ad": "2024-12-10", "dr": null, "st": false, "pr": null}, {"t": "The Kingdom of Copper", "a": "S. A. Chakraborty", "p": 707, "r": false, "s": "The Daevabad Trilogy", "si": 2.0, "ad": "2024-12-10", "dr": null, "st": false, "pr": null}, {"t": "Wind and Truth", "a": "Brandon Sanderson", "p": 1880, "r": true, "s": "The Stormlight Archive", "si": 5.0, "ad": "2024-12-14", "dr": "2025-04-24", "st": false, "pr": null}, {"t": "The City of Brass", "a": "S. A. Chakraborty", "p": 634, "r": true, "s": "The Daevabad Trilogy", "si": 1.0, "ad": "2024-12-15", "dr": "2025-05-19", "st": false, "pr": null}, {"t": "Wrath", "a": "John Gwynne", "p": 844, "r": false, "s": "The Faithful and the Fallen", "si": 4.0, "ad": "2024-12-15", "dr": null, "st": false, "pr": null}, {"t": "The Light of All That Falls", "a": "James Islington", "p": 1017, "r": true, "s": "The Licanius Trilogy", "si": 3.0, "ad": "2024-12-17", "dr": "2025-01-02", "st": false, "pr": null}, {"t": "The Seven Husbands of Evelyn Hugo", "a": "Taylor Jenkins Reid", "p": 422, "r": false, "s": null, "si": null, "ad": "2024-12-26", "dr": null, "st": false, "pr": null}, {"t": "The Empire of Gold", "a": "S. A. Chakraborty", "p": 862, "r": false, "s": "The Daevabad Trilogy", "si": 3.0, "ad": "2024-12-26", "dr": null, "st": false, "pr": null}, {"t": "Dark Space", "a": "Lisa Henry", "p": 282, "r": false, "s": "Dark Space", "si": 1.0, "ad": "2024-12-28", "dr": null, "st": false, "pr": null}, {"t": "Wolfsong", "a": "T. J. Klune", "p": 733, "r": true, "s": "Green Creek", "si": 1.0, "ad": "2025-01-02", "dr": "2025-08-12", "st": false, "pr": null}, {"t": "Valor", "a": "John Gwynne", "p": 809, "r": false, "s": "The Faithful and the Fallen", "si": 2.0, "ad": "2025-01-04", "dr": null, "st": false, "pr": null}, {"t": "Mammoths at the Gates", "a": "Nghi Vo", "p": 101, "r": false, "s": "The Singing Hills Cycle", "si": 4.0, "ad": "2025-01-04", "dr": null, "st": false, "pr": null}, {"t": "The Brides of High Hill", "a": "Nghi Vo", "p": 86, "r": false, "s": "The Singing Hills Cycle", "si": 5.0, "ad": "2025-01-04", "dr": null, "st": false, "pr": null}, {"t": "The Kaiju Preservation Society", "a": "John Scalzi", "p": 358, "r": false, "s": null, "si": null, "ad": "2025-01-05", "dr": null, "st": false, "pr": null}, {"t": "Our Evenings", "a": "Alan Hollinghurst", "p": 489, "r": true, "s": null, "si": null, "ad": "2025-01-05", "dr": "2025-01-10", "st": false, "pr": null}, {"t": "Into the Riverlands", "a": "Nghi Vo", "p": 79, "r": false, "s": "The Singing Hills Cycle", "si": 3.0, "ad": "2025-01-06", "dr": null, "st": false, "pr": null}, {"t": "Spook Rider: Submarine Direct Support", "a": "Dan Gibson", "p": 369, "r": false, "s": null, "si": null, "ad": "2025-01-07", "dr": null, "st": false, "pr": null}, {"t": "The Empress of Salt and Fortune", "a": "Nghi Vo", "p": 77, "r": false, "s": "The Singing Hills Cycle", "si": 1.0, "ad": "2025-01-09", "dr": null, "st": false, "pr": null}, {"t": "Somewhere Beyond the Sea", "a": "T. J. Klune", "p": 530, "r": true, "s": "Cerulean Chronicles", "si": 2.0, "ad": "2025-01-09", "dr": "2025-01-13", "st": false, "pr": null}, {"t": "When the Tiger Came Down the Mountain", "a": "Nghi Vo", "p": 86, "r": false, "s": "The Singing Hills Cycle", "si": 2.0, "ad": "2025-01-11", "dr": null, "st": false, "pr": null}, {"t": "Mal Goes to War", "a": "Edward Ashton", "p": 308, "r": false, "s": null, "si": null, "ad": "2025-01-12", "dr": null, "st": false, "pr": null}, {"t": "Myth of Sisyphus and Other Essays", "a": "Albert Camus", "p": 165, "r": false, "s": null, "si": null, "ad": "2025-01-14", "dr": null, "st": false, "pr": null}, {"t": "Patriot: A Memoir", "a": "Alexei Navalny, Алексей Навальный", "p": 506, "r": false, "s": null, "si": null, "ad": "2025-01-15", "dr": null, "st": false, "pr": null}, {"t": "The Blacktongue Thief", "a": "Christopher Buehlman", "p": 424, "r": false, "s": "Blacktongue", "si": 1.0, "ad": "2025-01-18", "dr": null, "st": false, "pr": null}, {"t": "The Hero of Ages", "a": "Brandon Sanderson", "p": 926, "r": true, "s": "The Mistborn Saga", "si": 3.0, "ad": "2025-01-19", "dr": "2025-01-22", "st": true, "pr": null}, {"t": "The Sunlit Man", "a": "Brandon Sanderson", "p": 386, "r": true, "s": "The Stormlight Archive", "si": 5.5, "ad": "2025-01-19", "dr": "2025-04-28", "st": false, "pr": null}, {"t": "Yumi and the Nightmare Painter", "a": "Brandon Sanderson", "p": 438, "r": true, "s": "The Cosmere", "si": 29.0, "ad": "2025-01-19", "dr": "2025-05-21", "st": false, "pr": null}, {"t": "Warbreaker", "a": "Brandon Sanderson", "p": 521, "r": true, "s": "The Cosmere", "si": 14.0, "ad": "2025-01-19", "dr": "2025-02-06", "st": false, "pr": null}, {"t": "The Tainted Cup", "a": "Robert Jackson Bennett", "p": 449, "r": true, "s": "Shadow of the Leviathan", "si": 1.0, "ad": "2025-01-24", "dr": "2025-09-26", "st": false, "pr": null}, {"t": "Yellowface", "a": "R. F. Kuang", "p": 313, "r": true, "s": null, "si": null, "ad": "2025-01-31", "dr": "2025-09-18", "st": false, "pr": null}, {"t": "Scythe", "a": "Neal Shusterman", "p": 389, "r": false, "s": "Arc of a Scythe", "si": 1.0, "ad": "2025-02-01", "dr": null, "st": true, "pr": null}, {"t": "The Lost Metal", "a": "Brandon Sanderson", "p": 624, "r": true, "s": "Mistborn: Wax & Wayne", "si": 4.0, "ad": "2025-02-02", "dr": "2025-10-27", "st": false, "pr": null}, {"t": "Ruin", "a": "John Gwynne", "p": 960, "r": false, "s": "The Faithful and the Fallen", "si": 3.0, "ad": "2025-02-04", "dr": null, "st": false, "pr": null}, {"t": "The Bands of Mourning", "a": "Brandon Sanderson", "p": 530, "r": true, "s": "Mistborn: Wax & Wayne", "si": 3.0, "ad": "2025-02-05", "dr": "2025-10-24", "st": false, "pr": null}, {"t": "Heartsong", "a": "T. J. Klune", "p": 697, "r": false, "s": "Green Creek", "si": 3.0, "ad": "2025-02-07", "dr": null, "st": false, "pr": null}, {"t": "Words of Radiance", "a": "Brandon Sanderson", "p": 1567, "r": true, "s": "The Stormlight Archive", "si": 2.0, "ad": "2025-02-17", "dr": "2025-02-23", "st": false, "pr": null}, {"t": "The Veiled Throne", "a": "Ken Liu", "p": 1207, "r": false, "s": "The Dandelion Dynasty", "si": 3.0, "ad": "2025-02-17", "dr": null, "st": false, "pr": null}, {"t": "The Wall of Storms", "a": "Ken Liu", "p": 991, "r": false, "s": "The Dandelion Dynasty", "si": 2.0, "ad": "2025-02-24", "dr": null, "st": false, "pr": null}, {"t": "This Is Amiko, Do You Copy?", "a": "Natsuko Imamura", "p": 77, "r": true, "s": null, "si": null, "ad": "2025-02-27", "dr": null, "st": false, "pr": null}, {"t": "The Grace of Kings", "a": "Ken Liu", "p": 714, "r": false, "s": "The Dandelion Dynasty", "si": 1.0, "ad": "2025-03-05", "dr": null, "st": false, "pr": 6}, {"t": "Gods of Jade and Shadow", "a": "Silvia Moreno-Garcia", "p": 369, "r": false, "s": null, "si": null, "ad": "2025-03-27", "dr": null, "st": false, "pr": null}, {"t": "Razorblade Tears", "a": "S. A. Cosby", "p": 351, "r": true, "s": null, "si": null, "ad": "2025-04-08", "dr": "2025-06-23", "st": false, "pr": null}, {"t": "Noise: A Flaw in Human Judgment", "a": "Daniel Kahneman, Olivier Sibony, Cass R. Sunstein", "p": 448, "r": true, "s": null, "si": null, "ad": "2025-04-08", "dr": "2025-05-11", "st": false, "pr": null}, {"t": "The Shadow Rising", "a": "Robert Jordan", "p": 1325, "r": false, "s": "The Wheel of Time", "si": 4.0, "ad": "2025-04-14", "dr": null, "st": false, "pr": null}, {"t": "New Spring", "a": "Robert Jordan", "p": 383, "r": false, "s": "The Wheel of Time", "si": 0.0, "ad": "2025-04-14", "dr": null, "st": false, "pr": null}, {"t": "The Great Hunt", "a": "Robert Jordan", "p": 927, "r": false, "s": "The Wheel of Time", "si": 2.0, "ad": "2025-04-14", "dr": null, "st": false, "pr": null}, {"t": "The Path of Daggers", "a": "Robert Jordan", "p": 798, "r": false, "s": "The Wheel of Time", "si": 8.0, "ad": "2025-04-14", "dr": null, "st": false, "pr": null}, {"t": "Winter's Heart", "a": "Robert Jordan", "p": 859, "r": false, "s": "The Wheel of Time", "si": 9.0, "ad": "2025-04-14", "dr": null, "st": false, "pr": null}, {"t": "A Crown of Swords", "a": "Robert Jordan", "p": 975, "r": false, "s": "The Wheel of Time", "si": 7.0, "ad": "2025-04-14", "dr": null, "st": false, "pr": null}, {"t": "The Wheel of Time Companion", "a": "Robert Jordan, Harriet McDougal, Alan Romanczuk, Maria Simons", "p": 1327, "r": false, "s": "The Wheel of Time", "si": 0.5, "ad": "2025-04-14", "dr": null, "st": false, "pr": null}, {"t": "The Gathering Storm", "a": "Robert Jordan, Brandon Sanderson", "p": 1174, "r": false, "s": "The Wheel of Time", "si": 12.0, "ad": "2025-04-14", "dr": null, "st": false, "pr": null}, {"t": "Knife of Dreams", "a": "Robert Jordan", "p": 1069, "r": false, "s": "The Wheel of Time", "si": 11.0, "ad": "2025-04-14", "dr": null, "st": false, "pr": null}, {"t": "Towers of Midnight", "a": "Robert Jordan, Brandon Sanderson", "p": 1396, "r": false, "s": "The Wheel of Time", "si": 13.0, "ad": "2025-04-14", "dr": null, "st": false, "pr": null}, {"t": "The Eye of the World", "a": "Robert Jordan", "p": 1084, "r": false, "s": "The Wheel of Time", "si": 1.0, "ad": "2025-04-14", "dr": null, "st": false, "pr": null}, {"t": "Lord of Chaos", "a": "Robert Jordan", "p": 1345, "r": false, "s": "The Wheel of Time", "si": 6.0, "ad": "2025-04-14", "dr": null, "st": false, "pr": null}, {"t": "The Fires of Heaven", "a": "Robert Jordan", "p": 1224, "r": false, "s": "The Wheel of Time", "si": 5.0, "ad": "2025-04-14", "dr": null, "st": false, "pr": null}, {"t": "A Memory of Light", "a": "Robert Jordan, Brandon Sanderson", "p": 1408, "r": false, "s": "The Wheel of Time", "si": 14.0, "ad": "2025-04-14", "dr": null, "st": false, "pr": null}, {"t": "Crossroads of Twilight", "a": "Robert Jordan", "p": 841, "r": false, "s": "The Wheel of Time", "si": 10.0, "ad": "2025-04-14", "dr": null, "st": false, "pr": null}, {"t": "The Dragon Reborn", "a": "Robert Jordan", "p": 859, "r": false, "s": "The Wheel of Time", "si": 3.0, "ad": "2025-04-14", "dr": null, "st": false, "pr": null}, {"t": "A Little Life", "a": "Hanya Yanagihara", "p": 902, "r": false, "s": null, "si": null, "ad": "2025-04-29", "dr": null, "st": false, "pr": null}, {"t": "The Spear Cuts Through Water", "a": "Simon Jimenez", "p": 548, "r": true, "s": null, "si": null, "ad": "2025-05-02", "dr": null, "st": false, "pr": null}, {"t": "Translation State", "a": "Ann Leckie", "p": 361, "r": false, "s": null, "si": null, "ad": "2025-05-19", "dr": null, "st": false, "pr": null}, {"t": "Llámame Por Tu Nombre", "a": "André Aciman", "p": 281, "r": true, "s": "Call Me by Your Name", "si": 1.0, "ad": "2025-05-21", "dr": null, "st": false, "pr": null}, {"t": "Everything Is Tuberculosis: The History and Persistence of Our Deadliest Infection", "a": "John Green", "p": 158, "r": true, "s": null, "si": null, "ad": "2025-06-13", "dr": "2025-06-24", "st": false, "pr": null}, {"t": "Project Hail Mary", "a": "Andy Weir", "p": 576, "r": true, "s": null, "si": null, "ad": "2025-07-04", "dr": "2025-07-07", "st": false, "pr": null}, {"t": "When Haru Was Here", "a": "Dustin Thao", "p": 265, "r": true, "s": null, "si": null, "ad": "2025-07-08", "dr": "2025-07-25", "st": false, "pr": null}, {"t": "The Frugal Wizard's Handbook for Surviving Medieval England", "a": "Brandon Sanderson", "p": 301, "r": false, "s": "Secret Projects", "si": 2.0, "ad": "2025-07-10", "dr": null, "st": false, "pr": null}, {"t": "Isles of the Emberdark", "a": "Brandon Sanderson", "p": 488, "r": true, "s": null, "si": null, "ad": "2025-07-10", "dr": "2025-07-17", "st": false, "pr": null}, {"t": "James", "a": "Percival Everett", "p": 284, "r": false, "s": null, "si": null, "ad": "2025-08-01", "dr": null, "st": false, "pr": null}, {"t": "Ravensong", "a": "T. J. Klune", "p": 679, "r": false, "s": "Green Creek", "si": 2.0, "ad": "2025-08-16", "dr": null, "st": false, "pr": null}, {"t": "Call Me by My True Names: The Collected Poems of Thich Nhat Hanh", "a": "Thich Nhat Hanh", "p": 253, "r": true, "s": null, "si": null, "ad": "2025-08-22", "dr": "2022-01-26", "st": false, "pr": null}, {"t": "Inanna", "a": "Emily H. Wilson", "p": 473, "r": false, "s": "Sumerians", "si": 1.0, "ad": "2025-08-22", "dr": null, "st": false, "pr": null}, {"t": "Tramps Like Us", "a": "Joe Westmoreland", "p": 355, "r": true, "s": null, "si": null, "ad": "2025-08-23", "dr": "2025-09-07", "st": false, "pr": null}, {"t": "Gone Girl", "a": "Gillian Flynn", "p": 540, "r": false, "s": null, "si": null, "ad": "2025-09-03", "dr": null, "st": false, "pr": null}, {"t": "Remarkably Bright Creatures", "a": "Shelby Van Pelt", "p": 366, "r": true, "s": null, "si": null, "ad": "2025-09-24", "dr": "2025-11-01", "st": false, "pr": null}, {"t": "A Drop of Corruption", "a": "Robert Jackson Bennett", "p": 506, "r": true, "s": "Shadow of the Leviathan", "si": 2.0, "ad": "2025-09-27", "dr": "2025-10-05", "st": false, "pr": null}, {"t": "The Memory Collectors", "a": "Dete Meserve", "p": 298, "r": false, "s": null, "si": null, "ad": "2025-10-07", "dr": null, "st": false, "pr": null}, {"t": "Hatchet", "a": "Gary Paulsen", "p": 144, "r": false, "s": "Brian's Saga", "si": 1.0, "ad": "2025-10-23", "dr": null, "st": false, "pr": null}, {"t": "Aether of Night", "a": "Brandon Sanderson", "p": 577, "r": false, "s": "Sanderson Curiosities", "si": 3.0, "ad": "2025-10-26", "dr": null, "st": false, "pr": null}, {"t": "The Employees: A Workplace Novel of the 22nd Century", "a": "Olga Ravn", "p": 58, "r": false, "s": null, "si": null, "ad": "2025-10-26", "dr": null, "st": false, "pr": null}, {"t": "Gathered: On Foraging, Feasting, and the Seasonal Life", "a": "Gabrielle Cerberville", "p": 342, "r": false, "s": null, "si": null, "ad": "2025-10-27", "dr": null, "st": false, "pr": null}, {"t": "Black Sun", "a": "Rebecca Roanhorse", "p": 397, "r": true, "s": "Between Earth and Sky", "si": 1.0, "ad": "2025-10-27", "dr": "2025-10-30", "st": false, "pr": null}, {"t": "Fevered Star", "a": "Rebecca Roanhorse", "p": 401, "r": false, "s": "Between Earth and Sky", "si": 2.0, "ad": "2025-10-29", "dr": null, "st": false, "pr": null}, {"t": "Mirrored Heavens", "a": "Rebecca Roanhorse", "p": 628, "r": false, "s": "Between Earth and Sky", "si": 3.0, "ad": "2025-10-31", "dr": null, "st": false, "pr": null}, {"t": "Red City", "a": "Marie Lu", "p": 490, "r": false, "s": "The New Alchemists", "si": 1.0, "ad": "2025-10-31", "dr": null, "st": false, "pr": null}, {"t": "The Way of Kings Prime", "a": "Brandon Sanderson", "p": 1074, "r": false, "s": "Sanderson Curiosities", "si": 1.0, "ad": "2025-11-02", "dr": null, "st": false, "pr": null}, {"t": "Dragonsteel Prime", "a": "Brandon Sanderson", "p": 834, "r": false, "s": "Sanderson Curiosities", "si": 2.0, "ad": "2025-11-02", "dr": null, "st": false, "pr": null}, {"t": "Elantris", "a": "Brandon Sanderson", "p": 798, "r": true, "s": "Elantris", "si": 1.0, "ad": "2025-11-09", "dr": "2025-11-09", "st": true, "pr": null}, {"t": "Arcanum Unbounded: The Cosmere Collection", "a": "Brandon Sanderson", "p": 702, "r": true, "s": "The Cosmere", "si": 12.0, "ad": "2025-11-10", "dr": "2025-11-15", "st": false, "pr": null}, {"t": "Interlude: Confessiones Ad Mortuos", "a": "James Islington", "p": 0, "r": true, "s": "Hierarchy", "si": 1.25, "ad": "2025-11-10", "dr": null, "st": false, "pr": null}, {"t": "The Strength of the Few", "a": "James Islington", "p": 906, "r": true, "s": "Hierarchy", "si": 2.0, "ad": "2025-11-12", "dr": "2025-11-14", "st": false, "pr": null}, {"t": "The Lies of Locke Lamora", "a": "Scott Lynch", "p": 661, "r": false, "s": "Gentleman Bastard", "si": 1.0, "ad": "2025-11-13", "dr": null, "st": false, "pr": null}, {"t": "The Republic of Thieves", "a": "Scott Lynch", "p": 824, "r": false, "s": "Gentleman Bastard", "si": 3.0, "ad": "2025-11-13", "dr": null, "st": false, "pr": null}, {"t": "A Beautifully Foolish Endeavor", "a": "Hank Green", "p": 492, "r": false, "s": "The Carls", "si": 2.0, "ad": "2025-11-19", "dr": null, "st": false, "pr": null}, {"t": "A Darker Shade of Magic", "a": "V. E. Schwab", "p": 389, "r": false, "s": "Shades of Magic", "si": 1.0, "ad": "2025-11-27", "dr": null, "st": false, "pr": null}, {"t": "Red Seas Under Red Skies", "a": "Scott Lynch", "p": 798, "r": false, "s": "Gentleman Bastard", "si": 2.0, "ad": "2025-11-29", "dr": null, "st": false, "pr": null}, {"t": "Machine Learning: New and Collected Stories", "a": "Hugh Howey", "p": 339, "r": false, "s": "Silo", "si": 3.5, "ad": "2025-12-03", "dr": null, "st": false, "pr": null}, {"t": "Jesus and John Wayne: How White Evangelicals Corrupted a Faith and Fractured a Nation", "a": "Kristin Kobes Du Mez", "p": 428, "r": false, "s": null, "si": null, "ad": "2025-12-05", "dr": null, "st": false, "pr": null}, {"t": "Assassin's Apprentice", "a": "Robin Hobb", "p": 466, "r": false, "s": "The Farseer Trilogy", "si": 1.0, "ad": "2025-12-08", "dr": null, "st": false, "pr": null}, {"t": "There Are Rivers in the Sky", "a": "Elif Shafak", "p": 492, "r": true, "s": null, "si": null, "ad": "2025-12-08", "dr": "2025-12-17", "st": false, "pr": null}, {"t": "The Incandescent", "a": "Emily Tesh", "p": 385, "r": false, "s": null, "si": null, "ad": "2025-12-10", "dr": null, "st": false, "pr": null}, {"t": "Tailored Realities", "a": "Brandon Sanderson", "p": 592, "r": false, "s": null, "si": null, "ad": "2025-12-11", "dr": null, "st": false, "pr": null}, {"t": "10 Minutes 38 Seconds in This Strange World", "a": "Elif Shafak", "p": 331, "r": true, "s": null, "si": null, "ad": "2025-12-19", "dr": "2026-02-15", "st": false, "pr": null}, {"t": "Enshittification: Why Everything Suddenly Got Worse and What to Do About It", "a": "Cory Doctorow", "p": 313, "r": false, "s": null, "si": null, "ad": "2025-12-19", "dr": null, "st": false, "pr": null}, {"t": "The Island of Missing Trees", "a": "Elif Shafak", "p": 344, "r": false, "s": null, "si": null, "ad": "2025-12-19", "dr": null, "st": false, "pr": null}, {"t": "Vicious", "a": "V. E. Schwab", "p": 370, "r": false, "s": "Villains", "si": 1.0, "ad": "2025-12-29", "dr": null, "st": false, "pr": null}, {"t": "The Narrow Road Between Desires", "a": "Patrick Rothfuss", "p": 135, "r": false, "s": "The Kingkiller Chronicle", "si": 0.6, "ad": "2025-12-29", "dr": null, "st": false, "pr": null}, {"t": "The Slow Regard of Silent Things", "a": "Patrick Rothfuss", "p": 110, "r": false, "s": "The Kingkiller Chronicle", "si": 2.5, "ad": "2025-12-29", "dr": null, "st": false, "pr": null}, {"t": "One Day, Everyone Will Have Always Been Against This", "a": "Omar El Akkad", "p": 143, "r": false, "s": null, "si": null, "ad": "2026-01-01", "dr": null, "st": false, "pr": null}, {"t": "Game Changers Volume 1/Game Changer/Heated Rivalry/Tough Guy", "a": "Rachel Reid", "p": 1150, "r": false, "s": "Game Changers", "si": 1.0, "ad": "2026-01-13", "dr": null, "st": false, "pr": null}, {"t": "Game Changers Volume 2", "a": "Rachel Reid", "p": 1169, "r": false, "s": "Game Changers", "si": 1.0, "ad": "2026-01-13", "dr": null, "st": false, "pr": null}, {"t": "The Bastard of Istanbul", "a": "Elif Shafak", "p": 383, "r": false, "s": null, "si": null, "ad": "2026-02-17", "dr": null, "st": false, "pr": 8}, {"t": "All That We See or Seem", "a": "Ken Liu", "p": 393, "r": true, "s": "Julia Z", "si": 1.0, "ad": "2026-02-18", "dr": "2026-02-28", "st": false, "pr": null}, {"t": "Designing Data-Intensive Applications: The Big Ideas Behind Reliable, Scalable, and Maintainable Systems", "a": "Martin Kleppmann", "p": 728, "r": false, "s": null, "si": null, "ad": "2026-02-28", "dr": null, "st": false, "pr": null}, {"t": "Invisible Planets: Contemporary Chinese Science Fiction in Translation", "a": "Ken Liu", "p": 398, "r": false, "s": null, "si": null, "ad": "2026-02-28", "dr": null, "st": false, "pr": null}, {"t": "Little Mushroom: Judgement Day", "a": "Yi Shisizhou", "p": 425, "r": true, "s": "Little Mushroom", "si": 1.0, "ad": "2026-02-28", "dr": null, "st": false, "pr": null}, {"t": "2 B R 0 2 B", "a": "Kurt Vonnegut Jr., Sheba Blake Publishing Corp.", "p": 19, "r": false, "s": null, "si": null, "ad": "2026-03-03", "dr": null, "st": false, "pr": null}, {"t": "The Husky and His White Cat Shizun: Erha He Ta De Bai Mao Shizun (Novel) Vol. 2", "a": "Rou Bao Bu Chi Rou", "p": 477, "r": false, "s": "The Husky and His White Cat Shizun: Erha He Ta De Bai Mao Shizun (Novel)", "si": 2.0, "ad": "2026-03-04", "dr": null, "st": false, "pr": null}, {"t": "The Husky and His White Cat Shizun: Erha He Ta De Bai Mao Shizun (Novel) Vol. 3", "a": "Rou Bao Bu Chi Rou", "p": 386, "r": false, "s": "The Husky and His White Cat Shizun: Erha He Ta De Bai Mao Shizun (Novel)", "si": 3.0, "ad": "2026-03-10", "dr": null, "st": false, "pr": null}, {"t": "The Husky and His White Cat Shizun: Erha He Ta De Bai Mao Shizun (Novel) Vol. 1", "a": "Rou Bao Bu Chi Rou", "p": 473, "r": false, "s": "The Husky and His White Cat Shizun: Erha He Ta De Bai Mao Shizun (Novel)", "si": 1.0, "ad": "2026-03-10", "dr": null, "st": false, "pr": null}, {"t": "Orbital", "a": "Samantha Harvey", "p": 130, "r": false, "s": null, "si": null, "ad": "2026-03-19", "dr": null, "st": false, "pr": null}, {"t": "Shadow & Claw", "a": "Gene Wolfe", "p": 632, "r": false, "s": null, "si": null, "ad": "2026-03-24", "dr": null, "st": false, "pr": null}, {"t": "Platform Engineering: A Guide for Technical, Product, and People Leaders", "a": "Camille Fournier, Ian Nowland", "p": 390, "r": false, "s": null, "si": null, "ad": "2026-03-27", "dr": null, "st": true, "pr": null}, {"t": "The Forty Rules of Love", "a": "Elif Shafak", "p": 359, "r": false, "s": null, "si": null, "ad": "2026-04-06", "dr": null, "st": false, "pr": null}, {"t": "Foundryside", "a": "Robert Jackson Bennett", "p": 650, "r": true, "s": "The Founders Trilogy", "si": 1.0, "ad": "2026-04-06", "dr": "2026-04-18", "st": false, "pr": null}, {"t": "Shorefall", "a": "Robert Jackson Bennett", "p": 607, "r": true, "s": "The Founders Trilogy", "si": 2.0, "ad": "2026-05-16", "dr": null, "st": false, "pr": null}, {"t": "Legends & Lattes", "a": "Travis Baldree", "p": 285, "r": false, "s": "Legends & Lattes", "si": 1.0, "ad": "2026-05-25", "dr": null, "st": false, "pr": 8}, {"t": "Locklands", "a": "Robert Jackson Bennett", "p": 657, "r": false, "s": "The Founders Trilogy", "si": 3.0, "ad": "2026-05-27", "dr": null, "st": false, "pr": null}, {"t": "Steelheart", "a": "Brandon Sanderson", "p": 414, "r": false, "s": "The Reckoners", "si": 1.0, "ad": "2026-05-30", "dr": null, "st": false, "pr": null}, {"t": "Calamity", "a": "Brandon Sanderson", "p": 413, "r": false, "s": "The Reckoners", "si": 3.0, "ad": "2026-05-30", "dr": null, "st": false, "pr": null}, {"t": "Firefight", "a": "Brandon Sanderson", "p": 426, "r": false, "s": "The Reckoners", "si": 2.0, "ad": "2026-05-30", "dr": null, "st": false, "pr": null}, {"t": "Mitosis", "a": "Brandon Sanderson", "p": 64, "r": false, "s": "The Reckoners", "si": 1.5, "ad": "2026-05-30", "dr": null, "st": false, "pr": null}], "yearly": [{"y": "2020", "in": 0, "out": 24}, {"y": "2021", "in": 0, "out": 15}, {"y": "2022", "in": 5, "out": 53}, {"y": "2023", "in": 3, "out": 28}, {"y": "2024", "in": 64, "out": 50}, {"y": "2025", "in": 99, "out": 81}, {"y": "2026", "in": 24, "out": 5}], "curve": [{"m": "2024-10", "tbr": 6, "in": 7, "out": 0}, {"m": "2024-11", "tbr": 42, "in": 42, "out": 6}, {"m": "2024-12", "tbr": 51, "in": 14, "out": 5}, {"m": "2025-01", "tbr": 63, "in": 21, "out": 9}, {"m": "2025-02", "tbr": 69, "in": 9, "out": 3}, {"m": "2025-03", "tbr": 69, "in": 2, "out": 2}, {"m": "2025-04", "tbr": 85, "in": 19, "out": 3}, {"m": "2025-05", "tbr": 83, "in": 3, "out": 5}, {"m": "2025-06", "tbr": 80, "in": 1, "out": 4}, {"m": "2025-07", "tbr": 81, "in": 4, "out": 3}, {"m": "2025-08", "tbr": 84, "in": 5, "out": 2}, {"m": "2025-09", "tbr": 84, "in": 3, "out": 3}, {"m": "2025-10", "tbr": 87, "in": 9, "out": 6}, {"m": "2025-11", "tbr": 91, "in": 11, "out": 7}, {"m": "2025-12", "tbr": 99, "in": 12, "out": 4}, {"m": "2026-01", "tbr": 101, "in": 3, "out": 1}, {"m": "2026-02", "tbr": 104, "in": 5, "out": 2}, {"m": "2026-03", "tbr": 110, "in": 7, "out": 1}, {"m": "2026-04", "tbr": 111, "in": 2, "out": 1}, {"m": "2026-05", "tbr": 118, "in": 7, "out": 0}, {"m": "2026-06", "tbr": 118, "in": 0, "out": 0}, {"m": "2026-07", "tbr": 118, "in": 0, "out": 0}], "elders": [{"t": "Mycelium Running: How Mushrooms Can Help Save the World", "a": "Paul Stamets", "days": 1512, "ad": "2022-05-16", "p": 540}, {"t": "The Man From the Future: The Visionary Ideas of John Von Neumann", "a": "Ananyo Bhattacharya", "days": 1427, "ad": "2022-08-09", "p": 438}, {"t": "The Rape of Nanking", "a": "Iris Chang", "days": 1314, "ad": "2022-11-30", "p": 354}, {"t": "Dharma Bums", "a": "Jack Kerouac", "days": 1314, "ad": "2022-11-30", "p": 243}, {"t": "Demons in the Golden Empire: Gonzalo Pizarro During the Spanish Conquest of the Inca Empire", "a": "Marcos Antonio Hernandez", "days": 1085, "ad": "2023-07-17", "p": 372}, {"t": "Endurance: Shackleton's Incredible Voyage", "a": "Alfred Lansing", "days": 1075, "ad": "2023-07-27", "p": 324}, {"t": "The Mysterious Case of Rudolf Diesel: Genius, Power, and Deception on the Eve of World War I", "a": "Douglas Brunt", "days": 630, "ad": "2024-10-14", "p": 310}, {"t": "Looking for Alaska", "a": "John Green", "days": 627, "ad": "2024-10-17", "p": 265}], "undated": [], "authors": [{"a": "Robert Jordan", "n": 16, "p": 16994}, {"a": "Brandon Sanderson", "n": 12, "p": 8673}, {"a": "Nghi Vo", "n": 5, "p": 429}, {"a": "Martha Wells", "n": 4, "p": 747}, {"a": "John Gwynne", "n": 4, "p": 3412}, {"a": "Ken Liu", "n": 4, "p": 3310}, {"a": "S. A. Chakraborty", "n": 3, "p": 1873}, {"a": "Scott Lynch", "n": 3, "p": 2283}], "series": [{"s": "The Murderbot Diaries", "read": 4, "left": 4, "next": "Home: Habitat, Range, Niche, Territory", "ni": 4.5}, {"s": "The Kingkiller Chronicle", "read": 2, "left": 2, "next": "The Narrow Road Between Desires", "ni": 0.6}, {"s": "The Founders Trilogy", "read": 2, "left": 1, "next": "Locklands", "ni": 3.0}, {"s": "The Daevabad Trilogy", "read": 1, "left": 2, "next": "The Kingdom of Copper", "ni": 2.0}, {"s": "Green Creek", "read": 1, "left": 2, "next": "Ravensong", "ni": 2.0}, {"s": "Between Earth and Sky", "read": 1, "left": 2, "next": "Fevered Star", "ni": 2.0}], "wot": {"n": 16, "pages": 16994, "words": 5081400}, "priority": [{"t": "The Bastard of Istanbul", "a": "Elif Shafak", "pr": 8, "ad": "2026-02-17"}, {"t": "Legends & Lattes", "a": "Travis Baldree", "pr": 8, "ad": "2026-05-25"}, {"t": "Jonathan Strange & Mr Norrell", "a": "Susanna Clarke", "pr": 6, "ad": "2024-11-14"}, {"t": "The Grace of Kings", "a": "Ken Liu", "pr": 6, "ad": "2025-03-05"}], "tags": [{"t": "Fantasy", "n": 84}, {"t": "Science Fiction", "n": 67}, {"t": "Adventure", "n": 39}, {"t": "Romance", "n": 22}, {"t": "Historical", "n": 18}, {"t": "Young Adult", "n": 17}, {"t": "Contemporary", "n": 10}, {"t": "History", "n": 9}]};
+
+/* ---------- helpers ---------- */
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+const fmt = n => n.toLocaleString('en-US');
+const cssVar = name => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+
+/* ---------- tooltip ---------- */
+const tip = $('#tip');
+function showTip(html, x, y) {
+  tip.innerHTML = html; tip.style.display = 'block';
+  const r = tip.getBoundingClientRect();
+  let left = x + 14, top = y + 14;
+  if (left + r.width > innerWidth - 8) left = x - r.width - 14;
+  if (top + r.height > innerHeight - 8) top = y - r.height - 14;
+  tip.style.left = left + 'px'; tip.style.top = top + 'px';
+}
+function hideTip() { tip.style.display = 'none'; }
+
+/* ---------- theme ---------- */
+const themeBtn = $('#theme-btn');
+function currentTheme() {
+  const t = document.documentElement.dataset.theme;
+  if (t) return t;
+  return matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+}
+function setThemeLabel() { themeBtn.textContent = currentTheme() === 'dark' ? 'lamp on' : 'lamp off'; }
+themeBtn.addEventListener('click', () => {
+  document.documentElement.dataset.theme = currentTheme() === 'dark' ? 'light' : 'dark';
+  setThemeLabel(); renderCharts();
+});
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => { setThemeLabel(); renderCharts(); });
+setThemeLabel();
+
+/* ---------- the shelf ---------- */
+function renderShelf() {
+  const box = $('#bookcase');
+  box.innerHTML = '';
+  const W = box.clientWidth || 800;
+  const maxP = Math.max(...DATA.spines.map(s => s.p));
+  const dims = DATA.spines.map(s => {
+    const p = s.p || 320;
+    return { w: Math.round(8 + 9 * (p / maxP)), h: Math.round(26 + 42 * Math.sqrt(p / maxP)) };
+  });
+  let shelf = null, used = 1e9;
+  DATA.spines.forEach((s, i) => {
+    const d = dims[i];
+    if (used + d.w + 2 > W - 20) {
+      shelf = document.createElement('div');
+      shelf.className = 'shelf';
+      box.appendChild(shelf);
+      used = 0;
+    }
+    used += d.w + 2;
+    const el = document.createElement('div');
+    el.className = 'spine ' + (s.r ? 'read' : 'unread');
+    el.style.width = d.w + 'px';
+    el.style.height = d.h + 'px';
+    el.addEventListener('mousemove', e => {
+      const bits = [];
+      bits.push(`<div class="t">${esc(s.t)}</div>`);
+      bits.push(`<div class="s">${esc(s.a)}${s.p ? ' · ' + fmt(s.p) + ' pp.' : ''}</div>`);
+      if (s.s) bits.push(`<div class="s">${esc(s.s)}${s.si ? ' #' + s.si : ''}</div>`);
+      bits.push(`<div>${s.r ? 'Read' + (s.dr ? ' · finished ' + s.dr : '') : 'Unread' + (s.ad ? ' · on the shelf since ' + s.ad : '')}</div>`);
+      if (s.pr && !s.r) bits.push(`<div>You marked this priority ${s.pr}</div>`);
+      showTip(bits.join(''), e.clientX, e.clientY);
+    });
+    el.addEventListener('mouseleave', hideTip);
+    shelf.appendChild(el);
+  });
+  const oldest = DATA.spines.find(s => s.ad);
+  $('#shelf-note').textContent =
+    `Shelved left to right by arrival date, ${oldest ? oldest.ad : ''} onward. ` +
+    `Four books report an arrival date in the year 101 A.D. and are shelved first out of respect for their seniority.`;
+}
+
+/* ---------- SVG scaffolding ---------- */
+function svgEl(w, h) {
+  const s = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  s.setAttribute('viewBox', `0 0 ${w} ${h}`);
+  return s;
+}
+function txt(x, y, str, size, fill, anchor, weight) {
+  return `<text x="${x}" y="${y}" font-size="${size}" fill="${fill}" text-anchor="${anchor || 'start'}" font-family="-apple-system, system-ui, sans-serif" ${weight ? `font-weight="${weight}"` : ''}>${esc(str)}</text>`;
+}
+
+/* ---------- flow chart (grouped bars) ---------- */
+function renderFlow() {
+  const el = $('#flow-chart');
+  const green = cssVar('--green'), brass = cssVar('--brass'),
+        ink2 = cssVar('--ink-2'), ink3 = cssVar('--ink-3'), rule = cssVar('--rule'), paper = cssVar('--paper-raised');
+  const W = 820, H = 300, m = { t: 30, r: 10, b: 30, l: 38 };
+  const data = DATA.yearly;
+  const maxV = Math.max(...data.flatMap(d => [d.in, d.out]));
+  const yMax = Math.ceil(maxV / 20) * 20;
+  const iw = W - m.l - m.r, ih = H - m.t - m.b;
+  const groupW = iw / data.length;
+  const barW = Math.min(26, groupW / 3);
+  const y = v => m.t + ih - (v / yMax) * ih;
+  let g = '';
+  for (let v = 0; v <= yMax; v += 20) {
+    g += `<line x1="${m.l}" y1="${y(v)}" x2="${W - m.r}" y2="${y(v)}" stroke="${rule}" stroke-width="1"/>`;
+    g += txt(m.l - 8, y(v) + 4, v, 11, ink3, 'end');
+  }
+  const bars = [];
+  data.forEach((d, i) => {
+    const cx = m.l + groupW * i + groupW / 2;
+    const x1 = cx - barW - 1, x2 = cx + 1;
+    g += `<rect x="${x1}" y="${y(d.in)}" width="${barW}" height="${Math.max(0, ih + m.t - y(d.in))}" rx="3" fill="${brass}" data-i="${i}" data-k="in"/>`;
+    g += `<rect x="${x2}" y="${y(d.out)}" width="${barW}" height="${Math.max(0, ih + m.t - y(d.out))}" rx="3" fill="${green}" data-i="${i}" data-k="out"/>`;
+    g += txt(cx, H - 10, d.y + (d.y === '2026' ? '*' : ''), 11.5, ink2, 'middle');
+    if (d.y === '2025') {
+      g += txt(x1 + barW / 2, y(d.in) - 6, d.in, 11, brass, 'middle', 600);
+      g += txt(x2 + barW / 2, y(d.out) - 6, d.out, 11, green, 'middle', 600);
+    }
+    bars.push({ x: m.l + groupW * i, w: groupW, d });
+  });
+  // legend
+  g += `<rect x="${m.l}" y="4" width="10" height="10" rx="2" fill="${brass}"/>` + txt(m.l + 16, 13, 'acquired', 11.5, ink2);
+  g += `<rect x="${m.l + 92}" y="4" width="10" height="10" rx="2" fill="${green}"/>` + txt(m.l + 108, 13, 'finished', 11.5, ink2);
+  const svg = svgEl(W, H);
+  svg.innerHTML = g;
+  el.innerHTML = ''; el.appendChild(svg);
+  svg.addEventListener('mousemove', e => {
+    const pt = svg.createSVGPoint(); pt.x = e.clientX; pt.y = e.clientY;
+    const p = pt.matrixTransform(svg.getScreenCTM().inverse());
+    const b = bars.find(b => p.x >= b.x && p.x < b.x + b.w);
+    if (b) showTip(`<div class="t">${b.d.y}${b.d.y === '2026' ? ' (through April, as recorded)' : ''}</div>` +
+      `<div>acquired ${b.d.in} · finished ${b.d.out}</div>` +
+      `<div class="s">net ${b.d.in - b.d.out >= 0 ? '+' : ''}${b.d.in - b.d.out} to the pile</div>`, e.clientX, e.clientY);
+    else hideTip();
+  });
+  svg.addEventListener('mouseleave', hideTip);
+  $('#flow-table').innerHTML = '<table><thead><tr><th>Year</th><th class="num">Acquired</th><th class="num">Finished</th></tr></thead><tbody>' +
+    data.map(d => `<tr><td>${d.y}</td><td class="num">${d.in}</td><td class="num">${d.out}</td></tr>`).join('') + '</tbody></table>';
+}
+
+/* ---------- mountain curve ---------- */
+function renderCurve() {
+  const el = $('#curve-chart');
+  const green = cssVar('--green'), brass = cssVar('--brass'), ink = cssVar('--ink'),
+        ink2 = cssVar('--ink-2'), ink3 = cssVar('--ink-3'), rule = cssVar('--rule');
+  const data = DATA.curve.filter(c => c.m >= '2024-11');
+  const W = 820, H = 300, m = { t: 20, r: 54, b: 30, l: 38 };
+  const iw = W - m.l - m.r, ih = H - m.t - m.b;
+  const yMax = 120;
+  const x = i => m.l + (i / (data.length - 1)) * iw;
+  const y = v => m.t + ih - (v / yMax) * ih;
+  let g = '';
+  for (let v = 0; v <= yMax; v += 30) {
+    g += `<line x1="${m.l}" y1="${y(v)}" x2="${W - m.r}" y2="${y(v)}" stroke="${rule}" stroke-width="1"/>`;
+    g += txt(m.l - 8, y(v) + 4, v, 11, ink3, 'end');
+  }
+  const pts = data.map((d, i) => `${x(i)},${y(d.tbr)}`).join(' ');
+  const area = `${m.l},${y(0)} ${pts} ${x(data.length - 1)},${y(0)}`;
+  g += `<polygon points="${area}" fill="${green}" opacity="0.10"/>`;
+  g += `<polyline points="${pts}" fill="none" stroke="${green}" stroke-width="2" stroke-linejoin="round"/>`;
+  // month labels: Jan of each year + start
+  data.forEach((d, i) => {
+    if (d.m.endsWith('-01') || i === 0) {
+      g += txt(x(i), H - 10, d.m.endsWith('-01') ? d.m.slice(0, 4) : 'Nov ’24', 11.5, ink2, i === 0 ? 'start' : 'middle');
+      g += `<line x1="${x(i)}" y1="${m.t + ih}" x2="${x(i)}" y2="${m.t + ih + 4}" stroke="${ink3}"/>`;
+    }
+  });
+  // end dot + label
+  const li = data.length - 1;
+  g += `<circle cx="${x(li)}" cy="${y(data[li].tbr)}" r="4.5" fill="${green}" stroke="${cssVar('--paper-raised')}" stroke-width="2"/>`;
+  g += txt(x(li) + 9, y(data[li].tbr) + 4, data[li].tbr, 13, ink, 'start', 600);
+  // import annotation at first point
+  g += `<circle cx="${x(0)}" cy="${y(data[0].tbr)}" r="3.5" fill="${brass}"/>`;
+  g += txt(x(0) + 8, y(data[0].tbr) - 8, 'the great import (+42 in a month)', 11, ink2);
+  const svg = svgEl(W, H);
+  svg.innerHTML = g;
+  el.innerHTML = ''; el.appendChild(svg);
+  svg.addEventListener('mousemove', e => {
+    const pt = svg.createSVGPoint(); pt.x = e.clientX; pt.y = e.clientY;
+    const p = pt.matrixTransform(svg.getScreenCTM().inverse());
+    const i = Math.max(0, Math.min(data.length - 1, Math.round((p.x - m.l) / iw * (data.length - 1))));
+    const d = data[i];
+    const [yy, mm] = d.m.split('-');
+    const name = new Date(+yy, +mm - 1, 1).toLocaleString('en-US', { month: 'long', year: 'numeric' });
+    showTip(`<div class="t">${name}</div><div>${d.tbr} unread on the shelf</div><div class="s">+${d.in} acquired · ${d.out} finished</div>`, e.clientX, e.clientY);
+  });
+  svg.addEventListener('mouseleave', hideTip);
+}
+
+/* ---------- tags ---------- */
+function renderTags() {
+  const el = $('#tag-chart');
+  const green = cssVar('--green'), ink = cssVar('--ink'), ink2 = cssVar('--ink-2'), rule = cssVar('--rule');
+  const data = DATA.tags;
+  const W = 820, rowH = 34, m = { t: 6, r: 46, b: 6, l: 150 };
+  const H = m.t + m.b + rowH * data.length;
+  const maxV = Math.max(...data.map(d => d.n));
+  const iw = W - m.l - m.r;
+  let g = '';
+  data.forEach((d, i) => {
+    const yy = m.t + rowH * i + rowH / 2;
+    const w = Math.max(3, (d.n / maxV) * iw);
+    g += txt(m.l - 12, yy + 4, d.t, 12.5, ink2, 'end');
+    g += `<rect x="${m.l}" y="${yy - 9}" width="${w}" height="18" rx="3" fill="${green}" opacity="${0.55 + 0.45 * (d.n / maxV)}"/>`;
+    g += txt(m.l + w + 8, yy + 4, d.n, 12, ink, 'start', 600);
+  });
+  const svg = svgEl(W, H);
+  svg.innerHTML = g;
+  el.innerHTML = ''; el.appendChild(svg);
+}
+
+/* ---------- prognosis ---------- */
+const START = { y: 2026, m: 7 };   // July 2026
+function project(readRate, buyRate) {
+  const net = readRate - buyRate;  // books drained per year
+  const tbr0 = DATA.totals.unread;
+  if (net <= 0) return { never: true, at2032: Math.round(tbr0 - net * 6) };
+  const years = tbr0 / net;
+  const months = Math.round(years * 12);
+  const dt = new Date(START.y, START.m - 1 + months, 1);
+  return { never: false, years, date: dt.toLocaleString('en-US', { month: 'long', year: 'numeric' }), year: dt.getFullYear() };
+}
+function renderProjection() {
+  const readRate = +$('#rate-read').value, buyRate = +$('#rate-buy').value;
+  $('#out-read').textContent = readRate; $('#out-buy').textContent = buyRate;
+  const r = project(readRate, buyRate);
+  if (r.never) {
+    $('#verdict').innerHTML = `The shelf clears: <span class="v">never</span>.`;
+    $('#verdict-sub').textContent = readRate === buyRate
+      ? `Perfect equilibrium: the pile holds at ${DATA.totals.unread} books forever. Eco would call this discipline.`
+      : `At these rates the pile grows by ${buyRate - readRate} a year — roughly ${fmt(r.at2032)} books by July 2032. The antilibrary wins.`;
+  } else {
+    $('#verdict').innerHTML = `The shelf clears: <span class="v">${esc(r.date)}</span>.`;
+    const yrs = r.years < 1 ? `${Math.round(r.years * 12)} months` : `${r.years.toFixed(1)} years`;
+    $('#verdict-sub').textContent = `${yrs} from now, at which point you would own no unread books — a condition Eco considered a personal failure, so perhaps don't.`;
+  }
+  // chart: monthly projection to 2032
+  const el = $('#proj-chart');
+  const green = cssVar('--green'), brass = cssVar('--brass'), ink = cssVar('--ink'),
+        ink2 = cssVar('--ink-2'), ink3 = cssVar('--ink-3'), rule = cssVar('--rule');
+  const months = 72;
+  const net = (readRate - buyRate) / 12;
+  const series = [];
+  for (let i = 0; i <= months; i++) series.push(Math.max(0, DATA.totals.unread - net * i));
+  const yMax = Math.max(140, Math.ceil(Math.max(...series) / 40) * 40);
+  const W = 820, H = 220, m = { t: 16, r: 20, b: 26, l: 38 };
+  const iw = W - m.l - m.r, ih = H - m.t - m.b;
+  const x = i => m.l + (i / months) * iw;
+  const y = v => m.t + ih - (v / yMax) * ih;
+  let g = '';
+  for (let v = 0; v <= yMax; v += yMax / 4) {
+    g += `<line x1="${m.l}" y1="${y(v)}" x2="${W - m.r}" y2="${y(v)}" stroke="${rule}"/>`;
+    g += txt(m.l - 8, y(v) + 4, Math.round(v), 11, ink3, 'end');
+  }
+  for (let yr = 2027; yr <= 2032; yr++) {
+    const i = (yr - START.y) * 12 - (START.m - 1);
+    g += txt(x(i), H - 8, yr, 11, ink3, 'middle');
+  }
+  const lineColor = net > 0 ? green : brass;
+  const pts = series.map((v, i) => `${x(i)},${y(v)}`).join(' ');
+  g += `<polygon points="${m.l},${y(0)} ${pts} ${x(months)},${y(0)}" fill="${lineColor}" opacity="0.08"/>`;
+  g += `<polyline points="${pts}" fill="none" stroke="${lineColor}" stroke-width="2.5" stroke-linejoin="round"/>`;
+  const zi = series.findIndex(v => v === 0);
+  if (zi > 0) {
+    g += `<circle cx="${x(zi)}" cy="${y(0)}" r="5" fill="${green}" stroke="${cssVar('--paper-raised')}" stroke-width="2"/>`;
+    g += txt(Math.min(x(zi), W - 90), y(0) - 12, 'library zero', 11.5, ink, 'middle', 600);
+  }
+  g += txt(m.l, 12, 'unread books on the shelf, projected', 11.5, ink3);
+  const svg = svgEl(W, H);
+  svg.innerHTML = g;
+  el.innerHTML = ''; el.appendChild(svg);
+  // scenario buttons reflect state
+  document.querySelectorAll('.scenario').forEach(b =>
+    b.setAttribute('aria-pressed', String(+b.dataset.read === readRate && +b.dataset.buy === buyRate)));
+}
+const SCENARIOS = [
+  { label: 'Status quo — last 12 months', read: 30, buy: 68 },
+  { label: 'Your 2025 rhythm', read: 51, buy: 55 },
+  { label: 'Cold turkey — not one more book', read: 51, buy: 0 },
+  { label: 'Monk mode — every finish from the shelf', read: 81, buy: 0 },
+];
+function buildScenarios() {
+  const box = $('#scenarios');
+  SCENARIOS.forEach(s => {
+    const b = document.createElement('button');
+    b.className = 'scenario'; b.textContent = s.label;
+    b.dataset.read = s.read; b.dataset.buy = s.buy;
+    b.setAttribute('aria-pressed', 'false');
+    b.addEventListener('click', () => {
+      $('#rate-read').value = s.read; $('#rate-buy').value = s.buy; renderProjection();
+    });
+    box.appendChild(b);
+  });
+}
+
+/* ---------- tables ---------- */
+function renderTables() {
+  $('#author-table').innerHTML = DATA.authors.map(a =>
+    `<tr><td>${esc(a.a)}</td><td class="num">${a.n}</td><td class="num">${fmt(a.p)}</td></tr>`).join('');
+  $('#elder-table').innerHTML = DATA.elders.map(e => {
+    const yrs = (e.days / 365).toFixed(1);
+    return `<tr><td>${esc(e.t)}<span class="sub">${esc(e.a)} · since ${e.ad}</span></td>` +
+      `<td class="num">${fmt(e.days)} days<span class="sub">${yrs} years</span></td><td class="num">${e.p ? fmt(e.p) : '—'}</td></tr>`;
+  }).join('');
+  $('#undated-note').textContent = DATA.undated.length ?
+    `Not listed: ${DATA.undated.join('; ')} — the four books whose records claim they joined the shelf in the year 101. If genuine, they are the oldest unread promises in human history.` : '';
+  $('#series-table').innerHTML = DATA.series.map(s =>
+    `<tr><td>${esc(s.s)}</td><td class="num">${s.read}</td><td class="num">${s.left}</td>` +
+    `<td>${esc(s.next)}<span class="sub">#${s.ni}</span></td></tr>`).join('');
+  $('#priority-table').innerHTML = DATA.priority.map(p =>
+    `<tr><td>${esc(p.t)}<span class="sub">${esc(p.a)}${p.ad ? ' · on the shelf since ' + p.ad : ''}</span></td>` +
+    `<td class="num">${'★'.repeat(Math.round(p.pr / 2))} (${p.pr}/10)</td></tr>`).join('');
+}
+
+/* ---------- header stats ---------- */
+function renderStats() {
+  const t = DATA.totals;
+  $('#hero-unread').textContent = t.unread;
+  $('#stat-pages').textContent = fmt(t.pages_owed);
+  $('#stat-words').textContent = (t.words_owed / 1e6).toFixed(1) + 'M';
+  $('#stat-avg').textContent = Math.round(t.pages_owed / t.unread);
+  $('#shelf-owned').textContent = t.owned;
+  $('#leg-read').textContent = t.read;
+  $('#leg-unread').textContent = t.unread;
+  const pct = (100 * t.read / t.owned);
+  $('#prog-fill').style.width = pct.toFixed(1) + '%';
+  $('#prog-cap').textContent = `${pct.toFixed(1)}% of the shelf conquered — ${t.read} of ${t.owned} books`;
+}
+
+/* ---------- boot ---------- */
+function renderCharts() { renderFlow(); renderCurve(); renderTags(); renderProjection(); }
+renderStats();
+buildScenarios();
+renderShelf();
+renderTables();
+renderCharts();
+$('#rate-read').addEventListener('input', renderProjection);
+$('#rate-buy').addEventListener('input', renderProjection);
+let rz;
+addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(renderShelf, 150); });
+</script>
+</body>
+</html>
