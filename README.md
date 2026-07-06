@@ -1,6 +1,6 @@
 # The Antilibrary
 
-**Live page: [stbenjam.github.io/antilibrary](https://stbenjam.github.io/antilibrary/)**
+**Live page: [bitbin.de/antilibrary](https://bitbin.de/antilibrary/)**
 
 A single-file, interactive audit of every book I own and have not read — 118 of them,
 66,143 pages, 19 million words — with the quiet arithmetic of whether I will ever
